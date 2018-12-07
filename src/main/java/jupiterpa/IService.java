@@ -1,0 +1,9 @@
+package jupiterpa;
+
+import jupiterpa.IMasterDataServer.MasterDataException;
+import jupiterpa.util.EconomyException;
+
+public interface IService {
+	public String getName();
+	public void initialize() throws EconomyException, MasterDataException;
+}

@@ -9,7 +9,6 @@ import jupiterpa.*;
 import jupiterpa.ICompany.*;
 import jupiterpa.IMasterDataDefinition.Material;
 import jupiterpa.IMasterDataServer.MasterDataException;
-import jupiterpa.IWarehouse.MStock;
 import jupiterpa.util.*;
 import jupiterpa.util.masterdata.MasterDataMaster;
 import jupiterpa.warehouse.Stock.Item;

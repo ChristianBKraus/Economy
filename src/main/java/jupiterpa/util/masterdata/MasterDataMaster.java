@@ -2,8 +2,6 @@ package jupiterpa.util.masterdata;
 
 import java.util.*;
 
-import org.springframework.stereotype.Service;
-
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.*;
 import jupiterpa.util.EID;

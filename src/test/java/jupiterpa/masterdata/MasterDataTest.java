@@ -18,7 +18,6 @@ import jupiterpa.IMasterDataServer;
 import jupiterpa.IMasterDataServer.EIDTyped;
 import jupiterpa.IMasterDataServer.MasterDataException;
 import jupiterpa.IMasterDataClient;
-import jupiterpa.IService;
 import jupiterpa.util.EID;
 import lombok.Data;
 

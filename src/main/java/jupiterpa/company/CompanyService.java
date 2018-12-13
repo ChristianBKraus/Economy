@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.MasterDataException;
 import jupiterpa.util.*;
-import lombok.Setter;
 import jupiterpa.ISales.MProduct;
-import jupiterpa.IWarehouse.MReceivedGoods;
 
 @Service 
 public class CompanyService implements ICompany {

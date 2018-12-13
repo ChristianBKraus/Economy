@@ -5,17 +5,12 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import lombok.Setter;
-
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.MasterDataException;
 import jupiterpa.ISales.MProduct;
 import jupiterpa.IWarehouse.MReceivedGoods;
-import jupiterpa.IWarehouse.MStock;
 import jupiterpa.ICompany.MOrder;
-import jupiterpa.company.CompanyService.CompanyMapper;
 import jupiterpa.util.*;
-import jupiterpa.util.masterdata.MasterDataClient;
 import jupiterpa.util.masterdata.MasterDataSlave;
 import jupiterpa.IMasterDataDefinition.Material;
 
@@ -40,9 +35,10 @@ public class PurchasingService implements IPurchasing {
 	}
 
 	@Override
-	public void purchase(int seller,EID materialId, int number) throws EconomyException {
+	public EID purchase(int seller,EID materialId, int number) throws EconomyException {
 		Credentials credentials = new Credentials(seller);
 		EID purchaseId = company.postOrder(credentials, toOrder(materialId,number));
+		return purchaseId;
 	}
 	
 	MOrder toOrder(EID materialId, int quantity) {

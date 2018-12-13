@@ -1,28 +1,19 @@
 package jupiterpa.masterdata;
 
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.hamcrest.Matchers.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import jupiterpa.IMasterDataServer;
 import jupiterpa.IMasterDataServer.EIDTyped;
 import jupiterpa.IMasterDataServer.MasterDataException;
-import jupiterpa.IMasterDataClient;
 import jupiterpa.IMasterDataDefinition;
-import jupiterpa.IMasterDataDefinition.Material;
-import jupiterpa.IService;
 import jupiterpa.util.EID;
 import jupiterpa.util.masterdata.MasterDataMaster;
 import jupiterpa.util.masterdata.MasterDataSlave;

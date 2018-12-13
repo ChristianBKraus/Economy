@@ -1,7 +1,5 @@
 package jupiterpa.util.masterdata;
 
-import org.springframework.stereotype.Service;
-
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.*;
 import jupiterpa.util.SystemService;

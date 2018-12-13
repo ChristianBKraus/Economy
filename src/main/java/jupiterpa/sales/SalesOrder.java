@@ -9,6 +9,7 @@ import jupiterpa.util.*;
 public class SalesOrder {
 	EID purchaseOrderId;
 	EID salesOrderId; 
+	int partner;
 	EID materialId;
 	int quantity;
 }

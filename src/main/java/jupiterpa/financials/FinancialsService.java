@@ -16,6 +16,10 @@ public class FinancialsService implements IFinancials {
 	public void initialize() throws EconomyException, MasterDataException {
 		// do nothing
 	}
+	@Override
+	public void onboard(Integer tenant) throws MasterDataException {
+		// do nothing		
+	}
 	
 	@Override
 	public void postInvoice(MInvoice invoice) throws EconomyException {
@@ -45,5 +49,6 @@ public class FinancialsService implements IFinancials {
 	public void salesOrder(MSalesOrder order) throws EconomyException {
 		// TODO Auto-generated method stub
 	}
+
 
 }

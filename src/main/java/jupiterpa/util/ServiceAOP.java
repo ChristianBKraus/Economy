@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import jupiterpa.IService;
@@ -22,16 +23,20 @@ public class ServiceAOP {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	public Marker SERVICE = MarkerFactory.getMarker("SERVICE");
 	
+	@Autowired SystemService system;
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Around("target(jupiterpa.IService)")
 	public Object log(ProceedingJoinPoint jointPoint) throws Throwable {
 		IService service = (IService) jointPoint.getTarget();
-        MDC.put("service", service.getName() );
+		Integer tenant = system.getCredentials().getTenant();
+        MDC.put("service", service.getName() + "-" + tenant );
         logger.info(SERVICE, " START {} ({})", jointPoint.getSignature().getName(),  Arrays.toString(jointPoint.getArgs()));
         
 		try {
 			Object result = jointPoint.proceed();
-	        MDC.put("service", service.getName() );
+			tenant = system.getCredentials().getTenant();
+	        MDC.put("service", service.getName() + "-" + tenant );
 			if (result != null) {
 				logger.info(SERVICE, " DONE {}", jointPoint.getSignature().getName());
 				try {
@@ -46,11 +51,13 @@ public class ServiceAOP {
 			}
 			return result;
 		} catch (EconomyException e) {
-	        MDC.put("service", service.getName() );
+			tenant = system.getCredentials().getTenant();
+	        MDC.put("service", service.getName() + "-" + tenant );
 			logger.error(SERVICE, "  => " + e ); 
 			throw e;
 		} catch (Throwable e) {
-	        MDC.put("service", service.getName() );
+			tenant = system.getCredentials().getTenant();
+	        MDC.put("service", service.getName() + "-" + tenant );
 			e.printStackTrace();
 			throw e;
 		}

@@ -12,10 +12,11 @@ public interface IMasterDataDefinition {
 		EID getParentId(String type);
 	}
 	
-	@Data @AllArgsConstructor
+	@Data @AllArgsConstructor 
 	public class Material implements Type {
 		public static final String TYPE = "Material"; 
 		EID materialId;
+		EID externalId;
 		String description;
 		@Override public EID getId() { return materialId; }
 	}

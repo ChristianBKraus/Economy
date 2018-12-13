@@ -6,18 +6,25 @@ import lombok.experimental.*;
 
 import jupiterpa.util.*;
 import jupiterpa.ISales.MProduct;
-import jupiterpa.ISales.MPurchaseOrder;
 
 public interface ICompany extends IService {
 	
-	List<MProduct> getProducts();
-	MProduct getProduct(EID materialId) throws EconomyException;
+	List<MProduct> getProducts(Credentials credentials);
+	MProduct getProduct(Credentials credentials, EID materialId) throws EconomyException;
 	
-	EID postPurchaseOrder(MPurchaseOrder order) throws EconomyException;
-	void postDelivery(MDelivery delivery) throws EconomyException;
-	void postInvoice(MInvoice invoice) throws EconomyException;
-	void postPayment(MPayment payment) throws EconomyException;
+	EID postOrder(Credentials credentials, MOrder order) throws EconomyException;
+	void postDelivery(Credentials credentials, MDelivery delivery) throws EconomyException;
+	void postInvoice(Credentials credentials, MInvoice invoice) throws EconomyException;
+	void postPayment(Credentials credentials, MPayment payment) throws EconomyException;
 			
+	@Data @Accessors(chain = true)
+	public class MOrder {
+		EID orderId;
+		int partner;
+		EID materialId;
+		int quantity;
+	}
+
 	@Data @Accessors(chain = true)
 	public class MDelivery {
 		EID salesOrderId;
@@ -32,12 +39,14 @@ public interface ICompany extends IService {
 		Double amount;
 		String currency;
 		EID materialId;
+		int partner;
 		Long quantity;
 	}
 	
 	@Data @AllArgsConstructor
 	public class MPayment {
 		EID invoiceId;
+		int partner;
 		Double amount;
 		String currency;
 	}

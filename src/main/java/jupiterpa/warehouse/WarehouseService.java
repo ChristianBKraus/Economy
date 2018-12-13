@@ -9,9 +9,10 @@ import jupiterpa.*;
 import jupiterpa.ICompany.*;
 import jupiterpa.IMasterDataDefinition.Material;
 import jupiterpa.IMasterDataServer.MasterDataException;
+import jupiterpa.IWarehouse.MStock;
 import jupiterpa.util.*;
 import jupiterpa.util.masterdata.MasterDataMaster;
-import lombok.Getter;
+import jupiterpa.warehouse.Stock.Item;
 
 @Service
 public class WarehouseService implements IWarehouse { 
@@ -23,17 +24,25 @@ public class WarehouseService implements IWarehouse {
 	@Autowired IFinancials financials; 
 	@Autowired ICompany company;
 	@Autowired IMasterDataServer masterData;
-	Stock stock = new Stock();
+	@Autowired SystemService systemService;
+	
+	Stock stock;
     MasterDataMaster<Material> material;
     
 	@Override
 	public void initialize() throws EconomyException, MasterDataException {
-    	material = new MasterDataMaster<Material>(Material.TYPE,masterData);
+    	material = new MasterDataMaster<Material>(Material.TYPE,masterData, systemService);
+    	stock  = new Stock(systemService);
 	}
 	public MasterDataMaster<Material> getMaterialMaster() {
 		return material;
 	}
-    	
+	@Override
+	public void onboard(Integer tenant) throws MasterDataException {
+		material.onboard(tenant);
+		stock.onboard(tenant);
+	}
+    
 	// Query
 	@Override
 	public List<MStock> getStock(List<EID> ids) throws EconomyException {
@@ -50,8 +59,24 @@ public class WarehouseService implements IWarehouse {
 		checkMaterial(id);
 		return toStock(stock.get(id));
 	}
+	@Override 
+	public List<MStock> getCompleteStock() throws EconomyException {
+		ArrayList<MStock> result = new ArrayList<MStock>();
+		for (Item item :  stock.get()) {
+			result.add(toStock(item));
+		}
+		return result;
+	}
 
 	// Process
+	@Override
+	public void createMaterial(Material material) throws MasterDataException, EconomyException {
+		this.material.create(material);
+		MStock s = new MStock();
+		s.setMaterialId(material.getMaterialId());
+		s.setQuantity(0);
+		postInitialStock(s);
+	}	
 	@Override
 	public void postInitialStock(MStock initialStock) throws EconomyException {
 		validate(initialStock);
@@ -78,8 +103,9 @@ public class WarehouseService implements IWarehouse {
 		post(doc);
 		stock.change(doc, true);
 		
-		financials.postIssueGoods(toFinancialsDocument(doc));		
-		company.postDelivery(toDelivery(doc));
+		financials.postIssueGoods(toFinancialsDocument(doc));
+
+		company.postDelivery(new Credentials(doc.getPartner()), toDelivery(doc));
 	}
 
 	@Override
@@ -141,6 +167,5 @@ public class WarehouseService implements IWarehouse {
 	}
 	MDelivery toDelivery(MaterialDocument doc) {
 		return mapper.toDelivery(doc);
-	}	
-
+	}
 }

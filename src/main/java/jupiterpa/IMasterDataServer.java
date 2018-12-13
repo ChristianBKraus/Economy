@@ -25,8 +25,14 @@ public interface IMasterDataServer {
 		EID    id;
 		@Override 
 		public String toString() {
-			return id + "/" + type;
+			return id  + "/" + type;
 		}
+	}
+	
+	@Data @AllArgsConstructor 
+	public class TenantType {
+		int tenant;
+		String type;
 	}
 	
 	public class MasterDataException extends Exception {

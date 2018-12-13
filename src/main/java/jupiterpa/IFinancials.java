@@ -21,6 +21,7 @@ public interface IFinancials extends IService {
 		EID purchaseOrderId;
 		EID salesOrderId; 
 		EID materialId;
+		int partner;
 		int quantity;
 	}
 	@Data @Accessors(chain = true)
@@ -30,5 +31,6 @@ public interface IFinancials extends IService {
 		int quantity;
 		EID salesOrderId;
 		EID deliveryId;
+		int partner;
 	}
 }

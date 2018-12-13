@@ -1,32 +1,43 @@
 package jupiterpa.masterdata;
 
 import java.util.*;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jupiterpa.*;
+import jupiterpa.util.SystemService;
 
 @Service
 public class MasterDataService implements IMasterDataServer {
-	Map<String,MasterData> types = new HashMap<String,MasterData>();
-	Map<String,List<IMasterDataClient>> clientsOfType = new HashMap<String,List<IMasterDataClient>>();
-	List<IMasterDataClient> clients = new ArrayList<IMasterDataClient>();
+	Map<TenantType,MasterData> types = new HashMap<TenantType,MasterData>();
+	Map<TenantType,List<IMasterDataClient>> clientsOfType = new HashMap<TenantType,List<IMasterDataClient>>();
+	
+	@Autowired SystemService system;
+	private TenantType addTenant(String type) {
+		int tenant = 0;
+		if (system != null) {
+			if (system.getCredentials() != null) {
+				tenant = system.getCredentials().getTenant();
+			}
+		}
+		return new TenantType(tenant,type);
+	}
 
 	@Override
 	public void registerType(String type, IMasterDataClient client) throws MasterDataException {
-		MasterData existing = types.get(type); 
+		MasterData existing = types.get(addTenant(type)); 
 		if (existing != null) {
 			throw new MasterDataException("Type " + type + " already registered");
 		}
 		MasterData md = new MasterData(type);
-		types.put(type, md);
-		clientsOfType.put(type, new ArrayList<IMasterDataClient>());
-		if (clients.contains(client) == false) 
-			clients.add(client);
+		types.put(addTenant(type), md);
+		clientsOfType.put(addTenant(type), new ArrayList<IMasterDataClient>());
 	}
 
 	@Override
 	public void registerClient(String type, IMasterDataClient client) throws MasterDataException {
-		List<IMasterDataClient> list = clientsOfType.get(type); 
+		List<IMasterDataClient> list = clientsOfType.get(addTenant(type)); 
 		if ( list == null) { 
 			throw new MasterDataException("Type " + type + " not registered");
 		}
@@ -37,12 +48,11 @@ public class MasterDataService implements IMasterDataServer {
 	public void reset() {
 		types.clear();
 		clientsOfType.clear();
-		clients.clear();
 	}
 
 	@Override
 	public Object get(EIDTyped key) throws MasterDataException {
-		MasterData md = types.get(key.getType());
+		MasterData md = types.get(addTenant(key.getType()));
 		if (md == null) {
 			throw new MasterDataException("Type " + key.getType() + " not known");
 		}
@@ -51,7 +61,7 @@ public class MasterDataService implements IMasterDataServer {
 
 	@Override
 	public Collection<Object> getAll(String type) throws MasterDataException {
-		MasterData md = types.get(type);
+		MasterData md = types.get(addTenant(type));
 		if (md == null) {
 			throw new MasterDataException("Type " + type + " not known");
 		}
@@ -59,20 +69,20 @@ public class MasterDataService implements IMasterDataServer {
 	}
 	
 	void add(EIDTyped key, Object entry) throws MasterDataException {
-		MasterData md = types.get(key.getType());
+		MasterData md = types.get(addTenant(key.getType()));
 		if (md == null) 
 			throw new MasterDataException("Type " + key.getType() + " does not exist");
 		md.put(key.getId(), entry);
 	}
 	void remove(EIDTyped key) throws MasterDataException {
-		MasterData md = types.get(key.getType());
+		MasterData md = types.get(addTenant(key.getType()));
 		if (md == null) 
 			throw new MasterDataException("Typ " + key.getType() + " does not exist");
 		md.remove(key.getId());
 	}
 	
 	void publish(EIDTyped key) throws MasterDataException {
-		List<IMasterDataClient> clients = clientsOfType.get(key.getType());
+		List<IMasterDataClient> clients = clientsOfType.get(addTenant(key.getType()));
 		for (IMasterDataClient client : clients) { 
 			client.invalidate(key);
 		}

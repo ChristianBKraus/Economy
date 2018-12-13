@@ -3,7 +3,7 @@ package jupiterpa;
 import java.util.*;
 import lombok.*;
 import lombok.experimental.*;
-
+import jupiterpa.ICompany.MOrder;
 import jupiterpa.util.*;
 
 public interface ISales extends IService {
@@ -11,7 +11,7 @@ public interface ISales extends IService {
 	List<MProduct> getProducts();
 	MProduct getProduct(EID materialId) throws EconomyException;
 	
-	EID postPurchaseOrder(MPurchaseOrder order) throws EconomyException;
+	EID postOrder(MOrder order) throws EconomyException;
 	
 	@Data @Accessors(chain = true)
 	public class MProduct {
@@ -19,13 +19,6 @@ public interface ISales extends IService {
 		String description;
 		Double price;
 		String currency;
-	}
-
-	@Data @Accessors(chain = true)
-	public class MPurchaseOrder {
-		EID purchaseOrderId;
-		EID materialId;
-		int quantity;
 	}
 
 }

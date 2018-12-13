@@ -14,4 +14,5 @@ public class MaterialDocument {
 	
 	EID salesOrderId;
 	EID deliveryId;
+	int partner;
 }

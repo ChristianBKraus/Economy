@@ -12,23 +12,38 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import jupiterpa.util.*;
+import jupiterpa.util.masterdata.TenantTable;
 
 public class Stock {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private Marker DB = MarkerFactory.getMarker("DB");
 
-	Map<EID,Item> stock = new HashMap<EID,Item>();
-	Map<EID,Item> reserved = new HashMap<EID,Item>();
+	SystemService system;
+	TenantTable<Item> stock;
+	TenantTable<Item> reserved;
+	
+	public Stock(SystemService system) {
+		stock = new TenantTable<Item>(system);
+		reserved = new TenantTable<Item>(system);
+		this.system = system;
+	}
+	public void onboard(Integer tenant) {
+		stock.onboard(tenant);
+		reserved.onboard(tenant);
+	}
 	
 	public Item get(EID materialId) {
-		return stock.getOrDefault(materialId, new Item(materialId,0,""));
+		return stock.get().getOrDefault(materialId, new Item(materialId,0,""));
 	}
 	public List<Item> get(String type) {
-		return stock.values().stream().filter( i -> i.getType() == "P" ).collect(Collectors.toList());
+		return stock.get().values().stream().filter( i -> i.getType() == "P" ).collect(Collectors.toList());
+	}
+	public Collection<Item> get() {
+		return stock.get().values();
 	}
 	
 	public void check(EID materialId, int quantity) throws EconomyException {
-		Item item = stock.get(materialId);
+		Item item = stock.get().get(materialId);
 		if (item == null) {
 			throw new EconomyException("Material %s not in stock",materialId);
 		}
@@ -37,27 +52,28 @@ public class Stock {
 		}
 	}
 	public void reserve(EID materialId, int quantity) {
-		Item item = reserved.get(materialId);
+		Item item = reserved.get().get(materialId);
 		if (item == null) {
-			reserved.put(materialId,new Item(materialId,quantity,""));
+			reserved.get().put(materialId,new Item(materialId,quantity,""));
 		} else {
 			item.setQuantity(item.getQuantity()+quantity);
 			if (item.getQuantity() == 0) {
-				reserved.remove(materialId);
+				reserved.get().remove(materialId);
 			} else {
-				reserved.replace(materialId, item);
+				reserved.get().replace(materialId, item);
 			};
 		}
 	}
 	public void change(MaterialDocument doc, boolean wasReserved) {
-		Item item = stock.get(doc.getMaterialId());
+		Item item = stock.get().get(doc.getMaterialId());
 		if (item == null) {
 			item = new Item(doc.getMaterialId(),doc.getQuantity(),"P"); // !!!!!!!!!!!!!
 		} else {
 			item.setQuantity(item.getQuantity() + doc.getQuantity());
 		}
-		stock.put(doc.getMaterialId(), item);
+		stock.get().put(doc.getMaterialId(), item);
 		logger.info(DB,"Stock change of {} by {} to {}",doc.getMaterialId(),doc.getQuantity(),item.getQuantity());
+		logger.trace(DB,"Stock-{}: {}", system.getCredentials().getTenant(),stock.get().values());
 		if (wasReserved)
 			reserve(doc.getMaterialId(),-1 * doc.getQuantity());
 	}

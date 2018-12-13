@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jupiterpa.*;
+import jupiterpa.ICompany.MOrder;
 import jupiterpa.util.*;
 import jupiterpa.util.masterdata.*;
 import jupiterpa.IMasterDataDefinition.*;
@@ -25,6 +26,7 @@ public class SalesService implements ISales {
 	@Autowired IWarehouse warehouse;
 	@Autowired IFinancials financials;
 	@Autowired IMasterDataServer masterData;
+	@Autowired SystemService systemService;
 	MasterDataSlave<Material> material;
 	MasterDataMaster<MaterialSales> materialSales;
 	
@@ -37,9 +39,14 @@ public class SalesService implements ISales {
 	
 	@Override
 	public void initialize() throws EconomyException, MasterDataException {
-		material = new MasterDataSlave<Material>(Material.TYPE, masterData);
-		materialSales = new MasterDataMaster<MaterialSales>(MaterialSales.TYPE, masterData);
+		material = new MasterDataSlave<Material>(Material.TYPE, masterData, systemService);
+		materialSales = new MasterDataMaster<MaterialSales>(MaterialSales.TYPE, masterData, systemService);
 		materialSales.addParent(material);
+	}
+	@Override
+	public void onboard(Integer tenant) throws MasterDataException {
+		material.onboard(tenant);
+		materialSales.onboard(tenant);
 	}
 	
 	// Queries
@@ -62,9 +69,9 @@ public class SalesService implements ISales {
 
 	// Process
 	@Override
-	public EID postPurchaseOrder(MPurchaseOrder purchaseOrder) throws EconomyException {
-		validate(purchaseOrder);
-		SalesOrder salesOrder = fromPurchaseOrder(purchaseOrder);
+	public EID postOrder(MOrder order) throws EconomyException {
+		validate(order);
+		SalesOrder salesOrder = fromOrder(order);
 		
 		post(salesOrder);
 		
@@ -82,7 +89,7 @@ public class SalesService implements ISales {
 	}
 	
 	// Validate
-	MPurchaseOrder validate(MPurchaseOrder order) throws EconomyException {
+	MOrder validate(MOrder order) throws EconomyException {
 		checkMaterial(order.getMaterialId());
 		return order;
 	}
@@ -96,13 +103,13 @@ public class SalesService implements ISales {
 	
 	@Mapper(componentModel = "spring")
 	public interface SalesMapper {
-		SalesOrder fromPurchaseOrder(MPurchaseOrder order);
+		SalesOrder fromOrder(MOrder order);
 		IWarehouse.MIssueGoods toIssueGoods(SalesOrder order);
 		IFinancials.MSalesOrder toFinancialsDocument(SalesOrder order);
 		MProduct toProduct(MaterialSales materialSales);
 	}
-	SalesOrder fromPurchaseOrder(MPurchaseOrder order) {
-		return mapper.fromPurchaseOrder(order)
+	SalesOrder fromOrder(MOrder order) {
+		return mapper.fromOrder(order)
 			.setSalesOrderId(EID.get('S'));
 	}
 	IWarehouse.MIssueGoods toIssueGoods(SalesOrder order) {
@@ -115,6 +122,4 @@ public class SalesService implements ISales {
 		return mapper.toProduct(ms)
 			.setDescription(m.getDescription());
 	}
-	
-
 }

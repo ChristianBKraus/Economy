@@ -7,30 +7,37 @@ import org.springframework.stereotype.Service;
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.*;
 import jupiterpa.util.EID;
+import jupiterpa.util.SystemService;
 
 public class MasterDataMaster<T extends IMasterDataDefinition.Type> extends MasterDataClient<T> {
 
-	public MasterDataMaster(String type, IMasterDataServer server) throws MasterDataException {
-		super(type,server);
+	public MasterDataMaster(String type, IMasterDataServer server, SystemService system) throws MasterDataException {
+		super(type,server,system);
+		getServer().registerType(type, this);
+	}
+	
+	@Override
+	public void onboard(Integer tenant) throws MasterDataException {
+		super.onboard(tenant);
 		getServer().registerType(type, this);
 	}
 	
 	// IMasterDataClient
 	// Maintenance
 	public void create(T entry) throws MasterDataException {
-		if ( data.get(entry.getId()) != null ) {
+		if ( data.get().get(entry.getId()) != null ) {
 			throw new MasterDataException("Entry with id " + entry.getId() + " does already exist");
 		}
 		checkParent(entry);
-		data.put(entry.getId(), entry);
+		data.get().put(entry.getId(), entry);
 		masterData.post( new EIDTyped(type,entry.getId()), entry); 
 	}
 	
 	public void update(T entry) throws MasterDataException {
-		if ( data.get(entry.getId()) == null) {
+		if ( data.get().get(entry.getId()) == null) {
 			throw new MasterDataException("Entry with id " + entry.getId() + " does not exist");
 		}
-		T new_entry = data.replace(entry.getId(), entry);
+		T new_entry = data.get().replace(entry.getId(), entry);
 		if (new_entry == null) {
 			throw new MasterDataException("Internal Error: "+ entry.getId() + " was not updated");
 		}

@@ -13,7 +13,7 @@ public class EID {
 	public static EID get(char appl) {
 		return new EID(appl);
 	}
-	
+		
 	Long number;
 	private EID(char appl) {
 		s_number++;

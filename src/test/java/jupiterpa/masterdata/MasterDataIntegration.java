@@ -72,14 +72,14 @@ public class MasterDataIntegration {
 	public void setup() throws MasterDataException {
 		md.reset();
 		
-		master = new MasterDataMaster<DataMock>("T",md);
+		master = new MasterDataMaster<DataMock>("T",md, null);
 		
-		depMaster = new MasterDataMaster<DepMock>("D",md);
+		depMaster = new MasterDataMaster<DepMock>("D",md, null);
 		depMaster.addParent(master);
 		
-		slave = new MasterDataSlave<DataMock>("T",md);
+		slave = new MasterDataSlave<DataMock>("T",md, null);
 		
-		depSlave = new MasterDataSlave<DepMock>("D",md);						
+		depSlave = new MasterDataSlave<DepMock>("D",md, null);						
 	}
 	
 	@Test

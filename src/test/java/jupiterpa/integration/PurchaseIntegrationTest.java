@@ -5,15 +5,16 @@ import java.util.List;
 
 import org.junit.*;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.hamcrest.Matchers.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import ch.qos.logback.classic.Level;
 
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.*;
@@ -21,8 +22,10 @@ import jupiterpa.IMasterDataDefinition.*;
 import jupiterpa.ISales.*;
 import jupiterpa.IWarehouse.MStock;
 import jupiterpa.sales.SalesService;
+import jupiterpa.util.Credentials;
 import jupiterpa.util.EID;
 import jupiterpa.util.EconomyException;
+import jupiterpa.util.SystemService;
 import jupiterpa.util.masterdata.MasterDataMaster;
 import jupiterpa.util.masterdata.MasterDataSlave;
 import jupiterpa.warehouse.WarehouseService; 
@@ -31,17 +34,23 @@ import jupiterpa.warehouse.WarehouseService;
 @SpringBootTest
 @ActiveProfiles({"test"})
 public class PurchaseIntegrationTest {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired ICompany company;
 	@Autowired IPurchasing purchasing;
 	@Autowired ISales sales;
 	@Autowired IWarehouse warehouse;
+	@Autowired IFinancials financials;
 	
 	@Autowired IMasterDataServer masterdata;
+	@Autowired SystemService system;
 	
 	MasterDataMaster<Material> materialMaster;
 	MasterDataSlave<Material> materialSlave;
 	MasterDataMaster<MaterialSales> materialSalesMaster;
+	
+	Credentials serverCredentials = new Credentials(1);
+	Credentials clientCredentials = new Credentials(2);
 	
 	@Before
 	public void logging() {
@@ -51,11 +60,35 @@ public class PurchaseIntegrationTest {
 	
 	@Before
 	public void initializeServices() throws MasterDataException, EconomyException {
-		masterdata.reset();
+		logger.info("TEST initialize");
 		
+		system.logoff();
+		masterdata.reset();		
+		
+		company.initialize();
 		warehouse.initialize();
 		sales.initialize();
+		purchasing.initialize();
+		financials.initialize();
+
+		// System 1
+		system.logon(serverCredentials);		
+		company.onboard(1);
+		warehouse.onboard(1);
+		sales.onboard(1);
+		purchasing.onboard(1);
+		financials.onboard(1);
+
+		// System 2
+		system.logon(clientCredentials);		
+		company.onboard(2);
+		warehouse.onboard(2);
+		sales.onboard(2);
+		purchasing.onboard(2);
+		financials.onboard(2);
 		
+		system.logon(serverCredentials);		
+
 		materialMaster = ( (WarehouseService) warehouse).getMaterialMaster(); 
 		materialSlave = ( (SalesService) sales).getMaterialSlave(); 
 		materialSalesMaster = ( (SalesService) sales).getMaterialSalesMaster(); 
@@ -63,8 +96,11 @@ public class PurchaseIntegrationTest {
 	
 	@Test
 	public void registerMaterial() throws EconomyException, MasterDataException {
+		logger.info("TEST register material");
 
-		Material m1 = new Material(EID.get('M'),"Material 1");
+		system.logon(serverCredentials);		
+		
+		Material m1 = new Material(EID.get('M'),null,"Material 1");
 		materialMaster.create(m1);
 		
 		Collection<Object> materials = masterdata.getAll(Material.TYPE);
@@ -73,8 +109,10 @@ public class PurchaseIntegrationTest {
 	
 	@Test
 	public void replicateMaterial() throws EconomyException, MasterDataException {
+		logger.info("TEST replicateMaterial");
+
 		// Create Material --> replicate
-		Material m1 = new Material(EID.get('M'),"Material 1");
+		Material m1 = new Material(EID.get('M'),null,"Material 1");
 		materialMaster.create(m1);
 		
 		Material result = materialSlave.get(m1.getId());
@@ -83,8 +121,10 @@ public class PurchaseIntegrationTest {
 	
 	@Test 
 	public void createDependent() throws EconomyException, MasterDataException {
+		logger.info("TEST create Dependent");
+		
 		// Create Material --> replicate
-		Material m1 = new Material(EID.get('M'),"Material 1");
+		Material m1 = new Material(EID.get('M'),null,"Material 1");
 		materialMaster.create(m1);
 		
 		// Create MaterialSales 
@@ -97,8 +137,10 @@ public class PurchaseIntegrationTest {
 	
 	@Test
 	public void createAndGetProduct() throws EconomyException, MasterDataException {
+		logger.info("TEST create and get product");
+		
 		// Create Material --> replicate
-		Material m1 = new Material(EID.get('M'),"Material 1");
+		Material m1 = new Material(EID.get('M'),null,"Material 1");
 		materialMaster.create(m1);
 		
 		// Create MaterialSales 
@@ -117,7 +159,7 @@ public class PurchaseIntegrationTest {
 	
 	private EID createMasterData(String description) throws EconomyException, MasterDataException {
 		// Material
-		Material m1 = new Material(EID.get('M'),description);
+		Material m1 = new Material(EID.get('M'),null,description);
 		materialMaster.create(m1);
 		
 		// MaterialSales 
@@ -129,14 +171,20 @@ public class PurchaseIntegrationTest {
 	
 	@Test
 	public void purchaseNotInStock() throws EconomyException, MasterDataException {
+		logger.info("TEST purchase not in stock");
+		
+		// Preparation on server
+		system.logon(serverCredentials);
 		createMasterData("Material 1");
 		
-    	List<MProduct> products = company.getProducts();
+		// Actions of Client
+		system.logon(clientCredentials);
+    	List<MProduct> products = company.getProducts(serverCredentials);
     	EID materialId = products.get(0).getMaterialId();
     	
     	boolean ex = false;
     	try {
-    		purchasing.purchase(materialId,1);
+    		purchasing.purchase(serverCredentials.getTenant(),materialId,1);
     	} catch (EconomyException x) {
     		//expected
     		ex = true;
@@ -146,18 +194,43 @@ public class PurchaseIntegrationTest {
 	
 	@Test
 	public void purchase() throws EconomyException, MasterDataException {
+		logger.info("TEST .......................................");
+		logger.info("TEST purchase");
+		logger.info("TEST .......................................");
+		
+		// Preparation on Server
+		system.logon(serverCredentials); 
 		EID id = createMasterData("Material 1");
 		MStock stock = new MStock();
 		stock.setMaterialId(id);
 		stock.setQuantity(1);
 		warehouse.postInitialStock(stock);
 		
-    	List<MProduct> products = company.getProducts();
+		// Preparation on Client
+		system.logon(clientCredentials);
+		purchasing.initializeBuyableGoods(serverCredentials.getTenant());
+//		id = createMasterData("Material 2");
+//		stock = new MStock();
+//		stock.setMaterialId(id);
+//		stock.setQuantity(0);
+//		warehouse.postInitialStock(stock);
+		
+		// Action on Client
+		List<MProduct> products = company.getProducts(serverCredentials);
     	EID materialId = products.get(0).getMaterialId();
     	
-   		purchasing.purchase(materialId,1);
+   		purchasing.purchase(serverCredentials.getTenant(),materialId,1);
    		
+   		// Stock of Server
+		system.logon(serverCredentials);
    		stock = warehouse.getStock(materialId);
-   		assertThat(stock.getQuantity(),equalTo(1)); // different company
+   		assertThat(stock.getQuantity(),equalTo(0));
+   		
+   		// Stock of Server
+   		system.logon(clientCredentials);
+   		List<MStock> stock2 = warehouse.getCompleteStock();
+   		assertThat(stock2.size(), equalTo(1));
+   		MStock item = stock2.get(0);
+   		assertThat(item.getQuantity(),equalTo(1));   		
 	}
 }

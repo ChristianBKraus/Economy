@@ -2,8 +2,6 @@ package jupiterpa.util.masterdata;
 
 import java.util.*;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jupiterpa.*;
 import jupiterpa.util.*;
 import jupiterpa.IMasterDataServer.*;
@@ -12,26 +10,36 @@ public abstract class MasterDataClient<T extends IMasterDataDefinition.Type>
 	implements IMasterDataClient, IMasterDataRepository {
 
 	IMasterDataServer masterData;
+	SystemService system;
 	
-	@Getter Map<EID,T> data = new HashMap<EID,T>();
+	TenantTable<T> data;
 	@Getter String type;
 	
-	public MasterDataClient(String type, IMasterDataServer server) {
+	public MasterDataClient(String type, IMasterDataServer server, SystemService system) {
 		this.type = type;
 		this.masterData = server;
+		this.system = system;
+		this.data  = new TenantTable<T>(system);
+	}
+	public void onboard(Integer tenant) throws MasterDataException {
+		this.data.onboard(tenant);
 	}
 	
 	// Access
+	protected Map<EID,T> getData() {
+		return data.get();
+	}
+	
 	@Override
 	public boolean containsKey(EID id) { 
-		return data.containsKey(id);
+		return data.get().containsKey(id);
 	}
 	public T get(EID id) {
-		return data.get(id);
+		return data.get().get(id);
 	}
 		
 	public Collection<T> values() {
-		return data.values();
+		return data.get().values();
 	}
 	protected IMasterDataServer getServer() { return masterData; } 
 	
@@ -44,15 +52,15 @@ public abstract class MasterDataClient<T extends IMasterDataDefinition.Type>
 			Object obj = masterData.get(id);
 			if (id.getType() == type) { 
 				T entry = (T) obj;
-				T replaced = data.replace(entry.getId(),entry);
+				T replaced = data.get().replace(entry.getId(),entry);
 				if (replaced == null) {
-					data.put(entry.getId(), entry);
+					data.get().put(entry.getId(), entry);
 				}
 				return;
 			}
 			throw new MasterDataException("Type " + id.getType() + " of entry unknown");	
 		} catch (MasterDataException e) {
-			data.remove(id.getId());
+			data.get().remove(id.getId());
 		}
 	}
 	
@@ -64,7 +72,7 @@ public abstract class MasterDataClient<T extends IMasterDataDefinition.Type>
 		entries = masterData.getAll(type);
 		for (Object obj : entries) {
 			T entry = (T) obj;
-			data.put(entry.getId(),entry);
+			data.get().put(entry.getId(),entry);
 		}
 	}
 

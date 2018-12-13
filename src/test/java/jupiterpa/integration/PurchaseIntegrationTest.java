@@ -62,30 +62,9 @@ public class PurchaseIntegrationTest {
 	public void initializeServices() throws MasterDataException, EconomyException {
 		logger.info("TEST initialize");
 		
-		system.logoff();
-		masterdata.reset();		
-		
-		company.initialize();
-		warehouse.initialize();
-		sales.initialize();
-		purchasing.initialize();
-		financials.initialize();
-
-		// System 1
-		system.logon(serverCredentials);		
-		company.onboard(1);
-		warehouse.onboard(1);
-		sales.onboard(1);
-		purchasing.onboard(1);
-		financials.onboard(1);
-
-		// System 2
-		system.logon(clientCredentials);		
-		company.onboard(2);
-		warehouse.onboard(2);
-		sales.onboard(2);
-		purchasing.onboard(2);
-		financials.onboard(2);
+		company.initialize();		
+		company.onboard(serverCredentials);
+		company.onboard(clientCredentials);		
 		
 		system.logon(serverCredentials);		
 

@@ -20,15 +20,31 @@ public class CompanyService implements ICompany {
 	@Autowired IPurchasing purchasing;
 	@Autowired IWarehouse  warehouse;
 	@Autowired ISales      sales;
+	@Autowired IMasterDataServer masterData;
 	@Autowired SystemService system;
 	
 	@Override
 	public void initialize() throws EconomyException, MasterDataException {
-		// do nothing
+		system.logoff();
+
+		masterData.reset();		
+		
+		warehouse.initialize();
+		sales.initialize();
+		purchasing.initialize();
+		financials.initialize();
 	}
 	@Override
-	public void onboard(Integer tenant) throws MasterDataException {
-		// do nothing		
+	public void onboard(Credentials credentials) throws MasterDataException {
+		Credentials old = system.getCredentials();
+		system.logon(credentials);		
+		
+		warehouse.onboard(credentials);
+		sales.onboard(credentials);
+		purchasing.onboard(credentials);
+		financials.onboard(credentials);
+		
+		system.logon(old);
 	}
 	
 	@Override

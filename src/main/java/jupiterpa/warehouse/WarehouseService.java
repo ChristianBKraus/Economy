@@ -37,9 +37,9 @@ public class WarehouseService implements IWarehouse {
 		return material;
 	}
 	@Override
-	public void onboard(Integer tenant) throws MasterDataException {
-		material.onboard(tenant);
-		stock.onboard(tenant);
+	public void onboard(Credentials credentials) throws MasterDataException {
+		material.onboard(credentials.getTenant());
+		stock.onboard(credentials.getTenant());
 	}
     
 	// Query

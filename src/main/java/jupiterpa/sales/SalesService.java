@@ -44,9 +44,9 @@ public class SalesService implements ISales {
 		materialSales.addParent(material);
 	}
 	@Override
-	public void onboard(Integer tenant) throws MasterDataException {
-		material.onboard(tenant);
-		materialSales.onboard(tenant);
+	public void onboard(Credentials credentials) throws MasterDataException {
+		material.onboard(credentials.getTenant());
+		materialSales.onboard(credentials.getTenant());
 	}
 	
 	// Queries

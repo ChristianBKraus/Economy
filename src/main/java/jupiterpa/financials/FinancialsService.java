@@ -17,7 +17,7 @@ public class FinancialsService implements IFinancials {
 		// do nothing
 	}
 	@Override
-	public void onboard(Integer tenant) throws MasterDataException {
+	public void onboard(Credentials credentials) throws MasterDataException {
 		// do nothing		
 	}
 	

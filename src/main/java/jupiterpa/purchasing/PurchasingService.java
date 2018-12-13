@@ -30,8 +30,8 @@ public class PurchasingService implements IPurchasing {
 	}
 
 	@Override
-	public void onboard(Integer tenant) throws MasterDataException {
-		material.onboard(tenant);
+	public void onboard(Credentials credentials) throws MasterDataException {
+		material.onboard(credentials.getTenant());
 	}
 
 	@Override

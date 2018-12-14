@@ -1,6 +1,8 @@
 package jupiterpa.warehouse;
 
 import java.util.*;
+import lombok.Getter;
+import org.mapstruct.Mapper;
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,32 +11,33 @@ import jupiterpa.*;
 import jupiterpa.ICompany.*;
 import jupiterpa.IMasterDataDefinition.Material;
 import jupiterpa.IMasterDataServer.MasterDataException;
+
 import jupiterpa.util.*;
 import jupiterpa.util.masterdata.MasterDataMaster;
+
 import jupiterpa.warehouse.Stock.Item;
 
 @Service
 public class WarehouseService implements IWarehouse { 
+
+	public String getName() { return "WAREHOUSE"; }
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private Marker DB = MarkerFactory.getMarker("DB");
-	
-	public String getName() { return "WAREHOUSE"; }
-	
+		
 	@Autowired IFinancials financials; 
 	@Autowired ICompany company;
+	
 	@Autowired IMasterDataServer masterData;
 	@Autowired SystemService systemService;
 	
 	Stock stock;
-    MasterDataMaster<Material> material;
+    @Getter MasterDataMaster<Material> material;
     
+    // Initialize 
 	@Override
 	public void initialize() throws EconomyException, MasterDataException {
     	material = new MasterDataMaster<Material>(Material.TYPE,masterData, systemService);
     	stock  = new Stock(systemService);
-	}
-	public MasterDataMaster<Material> getMaterialMaster() {
-		return material;
 	}
 	@Override
 	public void onboard(Credentials credentials) throws MasterDataException {
@@ -67,7 +70,7 @@ public class WarehouseService implements IWarehouse {
 		return result;
 	}
 
-	// Process
+	// Master Data	
 	@Override
 	public void createMaterial(Material material) throws MasterDataException, EconomyException {
 		this.material.create(material);
@@ -76,6 +79,8 @@ public class WarehouseService implements IWarehouse {
 		s.setQuantity(0);
 		postInitialStock(s);
 	}	
+	
+	// Operations
 	@Override
 	public void postInitialStock(MStock initialStock) throws EconomyException {
 		validate(initialStock);
@@ -84,8 +89,6 @@ public class WarehouseService implements IWarehouse {
 		stock.change(doc,false);
 		financials.postInitialGoods(toFinancialsDocument(doc));
 	}
-	
-	
 	@Override
 	public void reserveGoods(MIssueGoods goods) throws EconomyException {
 		validate(goods);
@@ -93,7 +96,6 @@ public class WarehouseService implements IWarehouse {
 		stock.check(goods.getMaterialId(),goods.getQuantity());
 		stock.reserve(goods.getMaterialId(),goods.getQuantity());
 	}
-
 	@Override
 	public void postIssueGoods(MIssueGoods goods) throws EconomyException {
 		validate(goods);
@@ -106,7 +108,6 @@ public class WarehouseService implements IWarehouse {
 
 		company.postDelivery(new Credentials(doc.getPartner()), toDelivery(doc));
 	}
-
 	@Override
 	public void postReceivedGoods(MReceivedGoods goods) throws EconomyException {
 		validate(goods);
@@ -145,6 +146,18 @@ public class WarehouseService implements IWarehouse {
 	@Autowired
 	WarehouseMapper mapper;
 		
+	@Mapper(componentModel = "spring")
+	public interface WarehouseMapper { 
+		
+		MaterialDocument fromStock(MStock stock);
+		MaterialDocument fromIssuedGoods(MIssueGoods goods); 
+		MaterialDocument fromReceivedGoods(MReceivedGoods goods); 
+		
+		IFinancials.MMaterialDocument toFinancialsDocument(MaterialDocument doc); 
+		MStock toStock(Stock.Item item); 
+		MDelivery toDelivery(MaterialDocument doc); 
+	}
+	
 	MaterialDocument fromStock(MStock stock) {
 		return mapper.fromStock(stock)
 				.setDocumentNumber(EID.get('M'));

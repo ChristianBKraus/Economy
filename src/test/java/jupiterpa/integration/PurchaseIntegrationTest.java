@@ -69,8 +69,8 @@ public class PurchaseIntegrationTest {
 		system.logon(serverCredentials);		
 
 		materialMaster = ( (WarehouseService) warehouse).getMaterialMaster(); 
-		materialSlave = ( (SalesService) sales).getMaterialSlave(); 
-		materialSalesMaster = ( (SalesService) sales).getMaterialSalesMaster(); 
+		materialSlave = ( (SalesService) sales).getMaterial(); 
+		materialSalesMaster = ( (SalesService) sales).getMaterialSales(); 
 	}
 	
 	@Test

@@ -1,6 +1,8 @@
 package jupiterpa.sales;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import lombok.Getter;
 import org.mapstruct.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jupiterpa.*;
-import jupiterpa.ICompany.MOrder;
 import jupiterpa.util.*;
 import jupiterpa.util.masterdata.*;
 import jupiterpa.IMasterDataDefinition.*;
@@ -25,18 +26,14 @@ public class SalesService implements ISales {
 	
 	@Autowired IWarehouse warehouse;
 	@Autowired IFinancials financials;
+	
 	@Autowired IMasterDataServer masterData;
 	@Autowired SystemService systemService;
-	MasterDataSlave<Material> material;
-	MasterDataMaster<MaterialSales> materialSales;
 	
-	public MasterDataSlave<Material> getMaterialSlave() {
-		return material;
-	}
-	public MasterDataMaster<MaterialSales> getMaterialSalesMaster() {
-		return materialSales;
-	}
+	@Getter MasterDataSlave<Material> material;
+	@Getter MasterDataMaster<MaterialSales> materialSales;
 	
+	// Initialize
 	@Override
 	public void initialize() throws EconomyException, MasterDataException {
 		material = new MasterDataSlave<Material>(Material.TYPE, masterData, systemService);
@@ -52,19 +49,15 @@ public class SalesService implements ISales {
 	// Queries
 	@Override
 	public List<MProduct> getProducts() {
-		List<MProduct> result = new ArrayList<MProduct>();
-		for (MaterialSales ms : materialSales.values()) {
-			Material m = material.get(ms.getMaterialId());
-			result.add( toProduct(m,ms));
-		}
-		return result;
+		return materialSales.values().stream().map( 
+				ms -> toProduct(ms)
+			).collect(Collectors.toList());
 	}
 	@Override
 	public MProduct getProduct(EID materialId) throws EconomyException {
 		checkMaterial(materialId);
-		Material m = material.get(materialId);
 		MaterialSales ms = materialSales.get(materialId);		
-		return toProduct(m,ms);
+		return toProduct(ms);
 	}
 
 	// Process
@@ -118,7 +111,8 @@ public class SalesService implements ISales {
 	IFinancials.MSalesOrder toFinancialsDocument(SalesOrder order) {
 		return mapper.toFinancialsDocument(order);
 	}
-	MProduct toProduct(Material m, MaterialSales ms) {
+	MProduct toProduct(MaterialSales ms) {
+		Material m = material.get(ms.getMaterialId());
 		return mapper.toProduct(ms)
 			.setDescription(m.getDescription());
 	}

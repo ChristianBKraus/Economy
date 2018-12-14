@@ -11,13 +11,13 @@ public class MasterDataMaster<T extends IMasterDataDefinition.Type> extends Mast
 
 	public MasterDataMaster(String type, IMasterDataServer server, SystemService system) throws MasterDataException {
 		super(type,server,system);
-		getServer().registerType(type, this);
+		server.registerType(type, this);
 	}
 	
 	@Override
 	public void onboard(Integer tenant) throws MasterDataException {
 		super.onboard(tenant);
-		getServer().registerType(type, this);
+		server.registerType(type, this);
 	}
 	
 	// IMasterDataClient
@@ -28,7 +28,7 @@ public class MasterDataMaster<T extends IMasterDataDefinition.Type> extends Mast
 		}
 		checkParent(entry);
 		data.get().put(entry.getId(), entry);
-		masterData.post( new EIDTyped(type,entry.getId()), entry); 
+		server.post( new EIDTyped(type,entry.getId()), entry); 
 	}
 	
 	public void update(T entry) throws MasterDataException {
@@ -39,15 +39,18 @@ public class MasterDataMaster<T extends IMasterDataDefinition.Type> extends Mast
 		if (new_entry == null) {
 			throw new MasterDataException("Internal Error: "+ entry.getId() + " was not updated");
 		}
-		masterData.post( new EIDTyped(type,entry.getId()), entry); 
+		server.post( new EIDTyped(type,entry.getId()), entry); 
 	}
 	
 	// Dependencies
+	@SuppressWarnings("rawtypes")
 	List<IMasterDataRepository> parents = new ArrayList<IMasterDataRepository>();
+	@SuppressWarnings("rawtypes")
 	public void addParent(IMasterDataRepository dep) {
 		parents.add(dep);
 	} 
 	
+	@SuppressWarnings("rawtypes")
 	protected void checkParent(T entry) throws MasterDataException {
 		IMasterDataDefinition.HasParent hasParent;
 		try {

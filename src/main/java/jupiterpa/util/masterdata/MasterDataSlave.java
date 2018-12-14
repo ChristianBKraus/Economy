@@ -9,13 +9,13 @@ public class MasterDataSlave<T extends IMasterDataDefinition.Type> extends Maste
 
 	public MasterDataSlave(String type, IMasterDataServer server, SystemService system) throws MasterDataException {
 		super(type,server, system);
-		getServer().registerClient(type, this);
+		server.registerClient(type, this);
 	}
 	
 	@Override
 	public void onboard(Integer tenant) throws MasterDataException {
 		super.onboard(tenant);
-		getServer().registerClient(type, this);
+		server.registerClient(type, this);
 	}
 		
 	// IMasterDataClient

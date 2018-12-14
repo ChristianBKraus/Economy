@@ -7,17 +7,18 @@ import jupiterpa.util.*;
 import jupiterpa.IMasterDataServer.*;
 
 public abstract class MasterDataClient<T extends IMasterDataDefinition.Type> 
-	implements IMasterDataClient, IMasterDataRepository {
+	implements IMasterDataClient, IMasterDataRepository<T> {
 
-	IMasterDataServer masterData;
-	SystemService system;
+	protected IMasterDataServer server;
+	protected SystemService system;
 	
-	TenantTable<T> data;
-	@Getter String type;
+	protected TenantTable<T> data;
+	@Getter protected String type;
 	
+	// Initialize
 	public MasterDataClient(String type, IMasterDataServer server, SystemService system) {
 		this.type = type;
-		this.masterData = server;
+		this.server = server;
 		this.system = system;
 		this.data  = new TenantTable<T>(system);
 	}
@@ -26,22 +27,22 @@ public abstract class MasterDataClient<T extends IMasterDataDefinition.Type>
 	}
 	
 	// Access
-	protected Map<EID,T> getData() {
-		return data.get();
-	}
+//	protected Map<EID,T> getData() {
+//		return data.get();
+//	}
 	
 	@Override
 	public boolean containsKey(EID id) { 
 		return data.get().containsKey(id);
 	}
+	@Override
 	public T get(EID id) {
 		return data.get().get(id);
 	}
-		
+	@Override	
 	public Collection<T> values() {
 		return data.get().values();
 	}
-	protected IMasterDataServer getServer() { return masterData; } 
 	
 	
 	// IMasterDataClient
@@ -49,7 +50,7 @@ public abstract class MasterDataClient<T extends IMasterDataDefinition.Type>
 	@Override
 	public void invalidate(EIDTyped id) {
 		try {
-			Object obj = masterData.get(id);
+			Object obj = server.get(id);
 			if (id.getType() == type) { 
 				T entry = (T) obj;
 				T replaced = data.get().replace(entry.getId(),entry);
@@ -69,7 +70,7 @@ public abstract class MasterDataClient<T extends IMasterDataDefinition.Type>
 	public void initialLoad() throws MasterDataException {
 
 		Collection<Object> entries;
-		entries = masterData.getAll(type);
+		entries = server.getAll(type);
 		for (Object obj : entries) {
 			T entry = (T) obj;
 			data.get().put(entry.getId(),entry);

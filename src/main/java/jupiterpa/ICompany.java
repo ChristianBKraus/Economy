@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.*;
 
 import jupiterpa.util.*;
-import jupiterpa.ISales.MProduct;
 
 public interface ICompany extends IService {
 	
@@ -18,9 +17,16 @@ public interface ICompany extends IService {
 	void postPayment(Credentials credentials, MPayment payment) throws EconomyException;
 			
 	@Data @Accessors(chain = true)
+	public class MProduct {
+		EID materialId; 
+		String description;
+		Double price;
+		String currency;
+	}
+	
+	@Data @Accessors(chain = true)
 	public class MOrder {
 		EID orderId;
-		int partner;
 		EID materialId;
 		int quantity;
 	}

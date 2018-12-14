@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.MasterDataException;
-import jupiterpa.ISales.MProduct;
 import jupiterpa.IWarehouse.MReceivedGoods;
 import jupiterpa.ICompany.MOrder;
 import jupiterpa.util.*;
@@ -49,8 +48,8 @@ public class PurchasingService implements IPurchasing {
 
 	@Override
 	public void initializeBuyableGoods(int seller) throws MasterDataException, EconomyException {
-		List<MProduct> products = company.getProducts(new Credentials(seller));
-		for (MProduct product : products) {
+		List<ICompany.MProduct> products = company.getProducts(new Credentials(seller));
+		for (ICompany.MProduct product : products) {
 			// Material
 			Material material = new Material(EID.get('M'),product.getMaterialId(),product.getDescription());
 			warehouse.createMaterial(material);

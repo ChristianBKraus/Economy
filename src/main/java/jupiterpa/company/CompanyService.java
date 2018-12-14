@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.MasterDataException;
 import jupiterpa.util.*;
-import jupiterpa.ISales.MProduct;
 
 @Service 
 public class CompanyService implements ICompany {
@@ -20,9 +19,11 @@ public class CompanyService implements ICompany {
 	@Autowired IPurchasing purchasing;
 	@Autowired IWarehouse  warehouse;
 	@Autowired ISales      sales;
+	
 	@Autowired IMasterDataServer masterData;
 	@Autowired SystemService system;
 	
+	// Initialization
 	@Override
 	public void initialize() throws EconomyException, MasterDataException {
 		system.logoff();
@@ -47,13 +48,14 @@ public class CompanyService implements ICompany {
 		system.logon(old);
 	}
 	
+	// Queries
 	@Override
 	public List<MProduct> getProducts(Credentials credentials) {
 		Credentials old = system.getCredentials();
 		system.logon(credentials);
 		
 		List<MProduct> products = sales.getProducts()
-			.stream().map(p->mapper.map(p)).collect(Collectors.toList());
+			.stream().map(p->mapper.from(p)).collect(Collectors.toList());
 		
 		system.logon(old);
 		return products;
@@ -63,34 +65,13 @@ public class CompanyService implements ICompany {
 		Credentials old = system.getCredentials();
 		system.logon(credentials);
 		
-		MProduct product =  mapper.map( sales.getProduct(materialId) );		
+		MProduct product =  mapper.from( sales.getProduct(materialId) );		
 
 		system.logon(old);
 		return product;
 	}
 
-	@Override
-	public EID postOrder(Credentials credentials, MOrder order) throws EconomyException {
-		Credentials old = system.getCredentials();
-		order.setPartner(old.getTenant());
-		system.logon(credentials);
-
-		EID id =	 sales.postOrder(order);
-		
-		system.logon(old);
-		return id;
-	}
-
-	@Override
-	public void postDelivery(Credentials credentials, MDelivery delivery) throws EconomyException {
-		Credentials old = system.getCredentials();
-		system.logon(credentials);
-		
-		purchasing.postDelivery( toDelivery(delivery, old.getTenant()) );
-
-		system.logon(old);
-	}
-
+	// Operations
 	@Override
 	public void postInvoice(Credentials credentials, MInvoice invoice) throws EconomyException {
 		Credentials old = system.getCredentials();
@@ -111,15 +92,44 @@ public class CompanyService implements ICompany {
 		system.logon(old);
 	}
 	
+	@Override
+	public EID postOrder(Credentials credentials, MOrder order) throws EconomyException {
+		Credentials old = system.getCredentials();
+		system.logon(credentials);
+
+		EID id = sales.postOrder( to(order, old.getTenant()) );
+		
+		system.logon(old);
+		return id;
+	}
+
+	@Override
+	public void postDelivery(Credentials credentials, MDelivery delivery) throws EconomyException {
+		Credentials old = system.getCredentials();
+		system.logon(credentials);
+		
+		purchasing.postDelivery( to(delivery, old.getTenant()) );
+
+		system.logon(old);
+	}
+
+	// Mapping
 	@Autowired CompanyMapper mapper;
 	@Mapper(componentModel = "spring")
 	public interface CompanyMapper {
-		MProduct map(ISales.MProduct product);
-		IPurchasing.MDelivery map(ICompany.MDelivery delivery);
+		ICompany.MProduct from(ISales.MProduct product);
+		IPurchasing.MDelivery to(ICompany.MDelivery delivery);
+		ISales.MOrder to(ICompany.MOrder order);
 	}
 	
-	IPurchasing.MDelivery toDelivery(ICompany.MDelivery delivery, Integer partner) {
-		return mapper.map(delivery).setPartner(partner);
+	ICompany.MProduct from(ISales.MProduct product) {
+		return mapper.from(product);
+	}
+	IPurchasing.MDelivery to(ICompany.MDelivery delivery, Integer partner) {
+		return mapper.to(delivery).setPartner(partner);
+	}
+	ISales.MOrder to(ICompany.MOrder order, Integer partner) {
+		return mapper.to(order).setPartner(partner);
 	}
 
 	

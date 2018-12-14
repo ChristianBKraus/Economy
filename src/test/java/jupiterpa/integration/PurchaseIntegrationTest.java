@@ -158,7 +158,7 @@ public class PurchaseIntegrationTest {
 		
 		// Actions of Client
 		system.logon(clientCredentials);
-    	List<MProduct> products = company.getProducts(serverCredentials);
+    	List<ICompany.MProduct> products = company.getProducts(serverCredentials);
     	EID materialId = products.get(0).getMaterialId();
     	
     	boolean ex = false;
@@ -195,7 +195,7 @@ public class PurchaseIntegrationTest {
 //		warehouse.postInitialStock(stock);
 		
 		// Action on Client
-		List<MProduct> products = company.getProducts(serverCredentials);
+		List<ICompany.MProduct> products = company.getProducts(serverCredentials);
     	EID materialId = products.get(0).getMaterialId();
     	
    		purchasing.purchase(serverCredentials.getTenant(),materialId,1);

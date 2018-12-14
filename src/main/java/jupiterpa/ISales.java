@@ -3,7 +3,6 @@ package jupiterpa;
 import java.util.*;
 import lombok.*;
 import lombok.experimental.*;
-import jupiterpa.ICompany.MOrder;
 import jupiterpa.util.*;
 
 public interface ISales extends IService {
@@ -20,5 +19,14 @@ public interface ISales extends IService {
 		Double price;
 		String currency;
 	}
+	
+	@Data @Accessors(chain = true)
+	public class MOrder {
+		EID orderId;
+		int partner;
+		EID materialId;
+		int quantity;
+	}
+	
 
 }

@@ -25,7 +25,7 @@ public interface IMasterDataDefinition {
 	public class MaterialSales implements Type, HasParent {
 		public static final String TYPE = "MaterialSales"; 
 		EID materialId;
-		String materialType;
+//		String materialType;
 		Double price;
 		String currency;
 		@Override public EID getId() { return materialId; }

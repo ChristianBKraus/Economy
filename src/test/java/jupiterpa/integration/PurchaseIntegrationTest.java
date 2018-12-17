@@ -1,6 +1,5 @@
 package jupiterpa.integration;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.junit.*;
@@ -19,7 +18,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.*;
 import jupiterpa.IMasterDataDefinition.*;
-import jupiterpa.ISales.*;
 import jupiterpa.IWarehouse.MStock;
 import jupiterpa.sales.SalesService;
 import jupiterpa.util.Credentials;
@@ -27,7 +25,6 @@ import jupiterpa.util.EID;
 import jupiterpa.util.EconomyException;
 import jupiterpa.util.SystemService;
 import jupiterpa.util.masterdata.MasterDataMaster;
-import jupiterpa.util.masterdata.MasterDataSlave;
 import jupiterpa.warehouse.WarehouseService; 
 
 @RunWith(SpringRunner.class)

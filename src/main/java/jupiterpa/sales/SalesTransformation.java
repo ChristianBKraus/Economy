@@ -1,8 +1,6 @@
 package jupiterpa.sales;
 
 import org.mapstruct.Mapper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jupiterpa.util.*;
 import jupiterpa.IMasterDataDefinition.*;
 import jupiterpa.util.masterdata.MasterDataClient;
@@ -11,12 +9,12 @@ import jupiterpa.ISales.*;
 import jupiterpa.IFinancials;
 import jupiterpa.IWarehouse;
 
-public class Sales {
+public class SalesTransformation {
 	MasterDataClient<Material> material;
 	MasterDataClient<MaterialSales> materialSales;
 	SalesMapper mapper;
 	
-	public Sales(MasterDataClient<Material> material, 
+	public SalesTransformation(MasterDataClient<Material> material, 
 			     MasterDataClient<MaterialSales> materialSales,
 			     SalesMapper mapper) {
 		this.material = material;
@@ -43,7 +41,8 @@ public class Sales {
 		IFinancials.MSalesOrder toFinancialsDocument(SalesOrder order);
 		MProduct toProduct(MaterialSales materialSales);
 	}
-	SalesOrder toSalesOrder(MOrder order) {
+	SalesOrder toSalesOrder(MOrder order) throws EconomyException {
+		validate(order);
 		return mapper.toSalesOrder(order)
 			.setSalesOrderId(EID.get('S'));
 	}

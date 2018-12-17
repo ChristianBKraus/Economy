@@ -15,7 +15,7 @@ import jupiterpa.util.*;
 import jupiterpa.util.masterdata.*;
 import jupiterpa.IMasterDataDefinition.*;
 import jupiterpa.IMasterDataServer.MasterDataException;
-import jupiterpa.sales.Sales.SalesMapper;
+import jupiterpa.sales.SalesTransformation.SalesMapper;
 
 @Service
 public class SalesService implements ISales {
@@ -35,7 +35,7 @@ public class SalesService implements ISales {
 	@Getter MasterDataSlave<Material> material;
 	@Getter MasterDataMaster<MaterialSales> materialSales;
 	
-	Sales sales;
+	SalesTransformation sales;
 	
 	// Initialize
 	@Override
@@ -45,7 +45,7 @@ public class SalesService implements ISales {
 		
 		materialSales.addParent(material);
 		
-		sales = new Sales(material,materialSales,mapper);
+		sales = new SalesTransformation(material,materialSales,mapper);
 	}
 	@Override
 	public void onboard(Credentials credentials) throws MasterDataException {
@@ -70,7 +70,6 @@ public class SalesService implements ISales {
 	// Process
 	@Override
 	public EID postOrder(MOrder order) throws EconomyException {
-		sales.validate(order);
 		SalesOrder salesOrder = sales.toSalesOrder(order);
 		
 		post(salesOrder);

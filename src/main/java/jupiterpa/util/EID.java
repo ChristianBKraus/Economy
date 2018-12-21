@@ -20,9 +20,7 @@ public class EID {
 		logger.trace(SERVICE,"EID - {}: {}",appl,s_number);
 		number = s_number;
 	}
-	private EID(EID number) {
-		this.number = number.number;
-	}
+
 	@Override
 	public String toString() {
 		return number.toString();

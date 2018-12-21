@@ -4,8 +4,6 @@ import lombok.*;
 import lombok.experimental.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -33,10 +31,7 @@ public class Stock {
 	}
 	
 	public Item get(EID materialId) {
-		return stock.get().getOrDefault(materialId, new Item(materialId,0,""));
-	}
-	public List<Item> get(String type) {
-		return stock.get().values().stream().filter( i -> i.getType() == "P" ).collect(Collectors.toList());
+		return stock.get().getOrDefault(materialId, new Item(materialId,0));
 	}
 	public Collection<Item> get() {
 		return stock.get().values();
@@ -54,7 +49,7 @@ public class Stock {
 	public void reserve(EID materialId, int quantity) {
 		Item item = reserved.get().get(materialId);
 		if (item == null) {
-			reserved.get().put(materialId,new Item(materialId,quantity,""));
+			reserved.get().put(materialId,new Item(materialId,quantity));
 		} else {
 			item.setQuantity(item.getQuantity()+quantity);
 			if (item.getQuantity() == 0) {
@@ -67,7 +62,7 @@ public class Stock {
 	public void change(MaterialDocument doc, boolean wasReserved) {
 		Item item = stock.get().get(doc.getMaterialId());
 		if (item == null) {
-			item = new Item(doc.getMaterialId(),doc.getQuantity(),"P"); // !!!!!!!!!!!!!
+			item = new Item(doc.getMaterialId(),doc.getQuantity()); // !!!!!!!!!!!!!
 		} else {
 			item.setQuantity(item.getQuantity() + doc.getQuantity());
 		}
@@ -83,12 +78,10 @@ public class Stock {
 	public class Item {		
 		EID materialId;
 		int quantity;
-		String type;
 		
-		public Item(EID materialId, int quantity, String type) {
+		public Item(EID materialId, int quantity) {
 			this.materialId = materialId;
 			this.quantity = quantity;
-			this.type = type;
 		}
 	}
 }

@@ -4,7 +4,6 @@ import org.mapstruct.Mapper;
 import jupiterpa.ICompany;
 import jupiterpa.IWarehouse;
 import jupiterpa.ICompany.MOrder;
-import jupiterpa.ICompany.MProduct;
 import jupiterpa.IFinancials;
 import jupiterpa.IMasterDataDefinition.Material;
 import jupiterpa.IMasterDataDefinition.Material.MaterialType;

@@ -9,7 +9,6 @@ import jupiterpa.util.masterdata.MasterDataSlave;
 import lombok.Getter;
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.MasterDataException;
-import jupiterpa.ISales.MProduct;
 import jupiterpa.IMasterDataDefinition.Material;
 import jupiterpa.IMasterDataDefinition.MaterialPurchasing;
 import jupiterpa.IWarehouse.MReceivedGoods;

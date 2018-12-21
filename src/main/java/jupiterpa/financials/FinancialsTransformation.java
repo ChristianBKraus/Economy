@@ -12,9 +12,6 @@ import jupiterpa.util.masterdata.MasterDataClient;
 
 import static jupiterpa.financials.Account.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class FinancialsTransformation {
 
 	FinancialsMapper mapper;

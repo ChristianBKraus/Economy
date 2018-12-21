@@ -10,7 +10,6 @@ import jupiterpa.ICompany.*;
 import jupiterpa.IMasterDataDefinition.*;
 import jupiterpa.IMasterDataServer.MasterDataException;
 import jupiterpa.financials.FinancialsTransformation.FinancialsMapper;
-import static jupiterpa.financials.TransactionType.*;
 
 @Service
 public class FinancialsService implements IFinancials {

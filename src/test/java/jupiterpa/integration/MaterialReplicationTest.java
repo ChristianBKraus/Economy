@@ -19,6 +19,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.*;
 import jupiterpa.IMasterDataDefinition.*;
+import jupiterpa.IMasterDataDefinition.Material.MaterialType;
 import jupiterpa.ISales.*;
 import jupiterpa.sales.SalesService;
 import jupiterpa.util.Credentials;
@@ -70,7 +71,7 @@ public class MaterialReplicationTest {
 	public void registerMaterial() throws EconomyException, MasterDataException {
 		logger.info("TEST register material");
 
-		Material m1 = new Material(EID.get('M'),null,"Material 1");
+		Material m1 = new Material(EID.get('M'),null,"Material 1", MaterialType.FINISHED);
 		materialMaster.create(m1);
 		
 		Collection<Object> materials = masterdata.getAll(Material.TYPE);
@@ -82,7 +83,7 @@ public class MaterialReplicationTest {
 		logger.info("TEST replicateMaterial");
 
 		// Create Material --> replicate
-		Material m1 = new Material(EID.get('M'),null,"Material 1");
+		Material m1 = new Material(EID.get('M'),null,"Material 1", MaterialType.FINISHED);
 		materialMaster.create(m1);
 		
 		Material result = materialSlave.get(m1.getId());
@@ -94,7 +95,7 @@ public class MaterialReplicationTest {
 		logger.info("TEST create Dependent");
 		
 		// Create Material --> replicate
-		Material m1 = new Material(EID.get('M'),null,"Material 1");
+		Material m1 = new Material(EID.get('M'),null,"Material 1", MaterialType.FINISHED);
 		materialMaster.create(m1);
 		
 		// Create MaterialSales 
@@ -110,7 +111,7 @@ public class MaterialReplicationTest {
 		logger.info("TEST create and get product");
 		
 		// Create Material --> replicate
-		Material m1 = new Material(EID.get('M'),null,"Material 1");
+		Material m1 = new Material(EID.get('M'),null,"Material 1", MaterialType.FINISHED);
 		materialMaster.create(m1);
 		
 		// Create MaterialSales 

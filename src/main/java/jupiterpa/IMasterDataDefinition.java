@@ -1,6 +1,7 @@
 package jupiterpa;
 import jupiterpa.util.EID;
 import lombok.*;
+import lombok.experimental.Accessors;
 
 
 public interface IMasterDataDefinition {
@@ -18,14 +19,34 @@ public interface IMasterDataDefinition {
 		EID materialId;
 		EID externalId;
 		String description;
+		MaterialType materialtype;
+		
 		@Override public EID getId() { return materialId; }
+		
+		public enum MaterialType { RAW, UNFINIHSED, HELPER, FINISHED };
 	}
 	
 	@Data @AllArgsConstructor
 	public class MaterialSales implements Type, HasParent {
 		public static final String TYPE = "MaterialSales"; 
 		EID materialId;
-//		String materialType;
+		Double price;
+		String currency;
+		@Override public EID getId() { return materialId; }
+		@Override public 
+		EID getParentId(String type) {
+			if (type == Material.TYPE) 
+				return materialId;
+			else 
+				return null;
+					
+		}
+	}
+
+	@Data @AllArgsConstructor @NoArgsConstructor @Accessors(chain = true)
+	public class MaterialPurchasing implements Type, HasParent {
+		public static final String TYPE = "MaterialPurchasing"; 
+		EID materialId;
 		Double price;
 		String currency;
 		@Override public EID getId() { return materialId; }

@@ -18,7 +18,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import jupiterpa.*;
 import jupiterpa.IMasterDataServer.*;
 import jupiterpa.IMasterDataDefinition.*;
+import jupiterpa.IMasterDataDefinition.Material.MaterialType;
 import jupiterpa.IWarehouse.MStock;
+import jupiterpa.purchasing.PurchasingService;
 import jupiterpa.sales.SalesService;
 import jupiterpa.util.Credentials;
 import jupiterpa.util.EID;
@@ -65,7 +67,7 @@ public class PurchaseIntegrationTest {
 		MasterDataMaster<MaterialSales> materialSalesMaster = ( (SalesService) sales).getMaterialSales(); 
 
 		// Material
-		Material m1 = new Material(EID.get('M'),null,description);
+		Material m1 = new Material(EID.get('M'),null,description, MaterialType.FINISHED);
 		materialMaster.create(m1);
 		
 		// MaterialSales 
@@ -99,10 +101,15 @@ public class PurchaseIntegrationTest {
 		logger.info("TEST .......................................");
 		
 		// Preparation on server
-		EID materialId = createMasterData(serverCredentials,"Material 1");
-		
-		// Trigger Exception
-    	purchasing.purchase(serverCredentials.getTenant(),materialId,1);
+		createMasterData(serverCredentials,"Material 1");
+		initializeBuyableGoods(serverCredentials);
+
+		// Action on Client
+		system.logon(clientCredentials);
+		MasterDataMaster<MaterialPurchasing> materialPurchasing = ( (PurchasingService) purchasing).getMaterialPurchasing(); 
+		MaterialPurchasing mp = materialPurchasing.values().iterator().next();
+   		purchasing.purchase(serverCredentials.getTenant(), mp.getId(), 1);
+
 	}
 	
 	@Test
@@ -113,11 +120,15 @@ public class PurchaseIntegrationTest {
 
 		// Preperations
 		EID materialId = createMasterData(serverCredentials, "Material 1");
-		postInitialStock(serverCredentials,materialId,1);
 		initializeBuyableGoods(serverCredentials);
-		
+
+		postInitialStock(serverCredentials,materialId,1);
+
 		// Action on Client
-   		purchasing.purchase(serverCredentials.getTenant(), materialId, 1);
+		system.logon(clientCredentials);
+		MasterDataMaster<MaterialPurchasing> materialPurchasing = ( (PurchasingService) purchasing).getMaterialPurchasing(); 
+		MaterialPurchasing mp = materialPurchasing.values().iterator().next();
+   		purchasing.purchase(serverCredentials.getTenant(), mp.getId(), 1);
    		
    		/// Check
    		// Stock of Server

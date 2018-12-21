@@ -7,14 +7,13 @@ import jupiterpa.util.*;
 import jupiterpa.ICompany.*;
 
 public interface IFinancials extends IService {
-	void salesOrder(MSalesOrder order) throws EconomyException;
+	void postSalesOrder(MSalesOrder order) throws EconomyException;
+	void postMaterialDocument(MMaterialDocument goods) throws EconomyException;
+	void postPurchaseOrder(MPurchaseOrder order) throws EconomyException;
 	
 	void postInvoice(MInvoice invoice) throws EconomyException;
 	void postPayment(MPayment payment) throws EconomyException;
 	
-	void postInitialGoods(MMaterialDocument goods) throws EconomyException;
-	void postIssueGoods(MMaterialDocument goods) throws EconomyException;
-	void postReceivedGoods(MMaterialDocument goods) throws EconomyException;
 	
 	@Data @Accessors(chain = true)
 	public class MSalesOrder {
@@ -24,6 +23,18 @@ public interface IFinancials extends IService {
 		int partner;
 		int quantity;
 	}
+	
+	@Data @Accessors(chain = true)
+	public class MPurchaseOrder {
+		EID purchaseOrderId;
+		EID salesOrderId;
+		int partner;
+		EID materialId;
+		int quantity;
+		double amount;
+		String currency;
+	}
+
 	@Data @Accessors(chain = true)
 	public class MMaterialDocument {
 		EID documentNumber;

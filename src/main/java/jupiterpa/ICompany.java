@@ -22,7 +22,7 @@ public interface ICompany extends IService {
 		String description;
 		Double price;
 		String currency;
-	}
+	} 
 	
 	@Data @Accessors(chain = true)
 	public class MOrder {
@@ -38,7 +38,7 @@ public interface ICompany extends IService {
 		int quantity;
 	}
 	
-	@Data @AllArgsConstructor
+	@Data @Accessors(chain = true)
 	public class MInvoice {
 		EID invoiceId;
 		EID orderId;
@@ -49,7 +49,7 @@ public interface ICompany extends IService {
 		Long quantity;
 	}
 	
-	@Data @AllArgsConstructor
+	@Data @Accessors(chain = true)
 	public class MPayment {
 		EID invoiceId;
 		int partner;

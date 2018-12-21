@@ -33,7 +33,7 @@ public class WarehouseService implements IWarehouse {
     @Getter MasterDataMaster<Material> material;
     
     @Autowired WarehouseMapper mapper;
-    WarehouseTransformation warehouse;
+    WarehouseTransformation transformation;
     
     // Initialize 
 	@Override
@@ -41,7 +41,7 @@ public class WarehouseService implements IWarehouse {
     	material = new MasterDataMaster<Material>(Material.TYPE,masterData, systemService);
     	stock  = new Stock(systemService);
     	
-    	warehouse = new WarehouseTransformation(material,mapper);
+    	transformation = new WarehouseTransformation(material,mapper);
 	}
 	@Override
 	public void onboard(Credentials credentials) throws MasterDataException {
@@ -54,22 +54,22 @@ public class WarehouseService implements IWarehouse {
 	public List<MStock> getStock(List<EID> ids) throws EconomyException {
 		List<MStock> result = new ArrayList<MStock>();		
 		for (EID id : ids) {
-			warehouse.checkMaterial(id);
-			MStock entry = warehouse.toStock(stock.get(id));
+			transformation.checkMaterial(id);
+			MStock entry = transformation.toStock(stock.get(id));
 			result.add(entry);
 		};
 		return result;
 	}
 	@Override
 	public MStock getStock(EID id) throws EconomyException {
-		warehouse.checkMaterial(id);
-		return warehouse.toStock(stock.get(id));
+		transformation.checkMaterial(id);
+		return transformation.toStock(stock.get(id));
 	}
 	@Override 
 	public List<MStock> getCompleteStock() throws EconomyException {
 		ArrayList<MStock> result = new ArrayList<MStock>();
 		for (Item item :  stock.get()) {
-			result.add(warehouse.toStock(item));
+			result.add(transformation.toStock(item));
 		}
 		return result;
 	}
@@ -87,12 +87,13 @@ public class WarehouseService implements IWarehouse {
 	// Operations
 	@Override
 	public void postInitialStock(MStock initialStock) throws EconomyException {
-		MaterialDocument doc = warehouse.toMaterialDocument(initialStock);
+		MaterialDocument doc = transformation.toMaterialDocument(initialStock);
 		
 		post(doc);
 		stock.change(doc,false);
 		
-		financials.postInitialGoods(warehouse.toFinancialsDocument(doc));
+		if (initialStock.getQuantity() != 0)
+			financials.postMaterialDocument(transformation.toFinancialsDocument(doc));
 	}
 	@Override
 	public void reserveGoods(MIssueGoods goods) throws EconomyException {		
@@ -101,21 +102,21 @@ public class WarehouseService implements IWarehouse {
 	}
 	@Override
 	public void postIssueGoods(MIssueGoods goods) throws EconomyException {
-		MaterialDocument doc = warehouse.toMaterialDocument(goods);
+		MaterialDocument doc = transformation.toMaterialDocument(goods);
 		
 		post(doc);
 		stock.change(doc, true);
 		
-		financials.postIssueGoods(warehouse.toFinancialsDocument(doc));
-		company.postDelivery(new Credentials(doc.getPartner()), warehouse.toDelivery(doc));
+		financials.postMaterialDocument(transformation.toFinancialsDocument(doc));
+		company.postDelivery(new Credentials(doc.getPartner()), transformation.toDelivery(doc));
 	}
 	@Override
 	public void postReceivedGoods(MReceivedGoods goods) throws EconomyException {
-		MaterialDocument doc = warehouse.toMaterialDocument(goods);
+		MaterialDocument doc = transformation.toMaterialDocument(goods);
 		
 		stock.change(doc, false);
 		
-		financials.postReceivedGoods(warehouse.toFinancialsDocument(doc));
+		financials.postMaterialDocument(transformation.toFinancialsDocument(doc));
 	}
 	
 	//Post

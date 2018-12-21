@@ -4,7 +4,11 @@ import org.mapstruct.Mapper;
 import jupiterpa.ICompany;
 import jupiterpa.IWarehouse;
 import jupiterpa.ICompany.MOrder;
+import jupiterpa.ICompany.MProduct;
+import jupiterpa.IFinancials;
 import jupiterpa.IMasterDataDefinition.Material;
+import jupiterpa.IMasterDataDefinition.Material.MaterialType;
+import jupiterpa.IMasterDataDefinition.MaterialPurchasing;
 import jupiterpa.IPurchasing.MDelivery;
 import jupiterpa.util.EID;
 import jupiterpa.util.masterdata.MasterDataClient;
@@ -15,7 +19,7 @@ public class PurchasingTransformation {
 	PurchasingMapper mapper;
 	
 	public PurchasingTransformation(MasterDataClient<Material> material, PurchasingMapper mapper) {
-		this.material = material;
+		this.material = material; 
 		this.mapper = mapper;
 	}
 	
@@ -23,6 +27,8 @@ public class PurchasingTransformation {
 	@Mapper(componentModel = "spring")
 	public interface PurchasingMapper {
 		IWarehouse.MReceivedGoods toReceivedGoods(MDelivery delivery);
+		MaterialPurchasing toMaterialPurchasing(ICompany.MProduct product);
+		IFinancials.MPurchaseOrder toFinancials(PurchaseOrder order);
 	}
 	
 	IWarehouse.MReceivedGoods toReceivedGoods(MDelivery delivery) {
@@ -38,6 +44,9 @@ public class PurchasingTransformation {
 			.setDeliveryId(delivery.getSalesOrderId())
 			.setQuantity(-1 * delivery.getQuantity());
 	}
+	IFinancials.MPurchaseOrder toFinancials(PurchaseOrder order) {
+		return mapper.toFinancials(order);
+	}
 
 	ICompany.MOrder toOrder(EID materialId, int quantity) {
 		return new MOrder()
@@ -46,7 +55,12 @@ public class PurchasingTransformation {
 	}
 	
 	Material toMaterial(ICompany.MProduct product) {
-		return new Material(EID.get('M'), product.getMaterialId(),product.getDescription() );
+		return new Material(EID.get('M'), product.getMaterialId(),product.getDescription(), MaterialType.RAW );
+	}
+	MaterialPurchasing toMaterialPurchasing(ICompany.MProduct product, Material material) {
+		MaterialPurchasing mp = mapper.toMaterialPurchasing(product);
+		mp.setMaterialId(material.getMaterialId());
+		return mp;  
 	}
 
 }

@@ -35,7 +35,7 @@ public class SalesService implements ISales {
 	@Getter MasterDataSlave<Material> material;
 	@Getter MasterDataMaster<MaterialSales> materialSales;
 	
-	SalesTransformation sales;
+	SalesTransformation transformation;
 	
 	// Initialize
 	@Override
@@ -45,7 +45,7 @@ public class SalesService implements ISales {
 		
 		materialSales.addParent(material);
 		
-		sales = new SalesTransformation(material,materialSales,mapper);
+		transformation = new SalesTransformation(material,materialSales,mapper);
 	}
 	@Override
 	public void onboard(Credentials credentials) throws MasterDataException {
@@ -57,28 +57,28 @@ public class SalesService implements ISales {
 	@Override
 	public List<MProduct> getProducts() {
 		return materialSales.values().stream().map( 
-				ms -> sales.toProduct(ms)
+				ms -> transformation.toProduct(ms)
 			).collect(Collectors.toList());
 	}
 	@Override
 	public MProduct getProduct(EID materialId) throws EconomyException {
-		sales.checkMaterial(materialId);
+		transformation.checkMaterial(materialId);
 		MaterialSales ms = materialSales.get(materialId);		
-		return sales.toProduct(ms);
+		return transformation.toProduct(ms);
 	}
 
 	// Process
 	@Override
 	public EID postOrder(MOrder order) throws EconomyException {
-		SalesOrder salesOrder = sales.toSalesOrder(order);
+		SalesOrder salesOrder = transformation.toSalesOrder(order);
 		
 		post(salesOrder);
 		
-		IWarehouse.MIssueGoods issueGoods = sales.toIssueGoods(salesOrder);
+		IWarehouse.MIssueGoods issueGoods = transformation.toIssueGoods(salesOrder);
 		warehouse.reserveGoods(issueGoods);
 		warehouse.postIssueGoods(issueGoods);
 		
-		financials.salesOrder(sales.toFinancialsDocument(salesOrder));
+		financials.postSalesOrder(transformation.toFinancialsDocument(salesOrder));
 		return salesOrder.getSalesOrderId();
 	}
 	
